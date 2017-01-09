@@ -1,0 +1,134 @@
+<html>
+<head>
+	<title>Asynchronous JavaScript</title>
+</head>
+<body>
+
+	<form id="search">
+		<input type="text" name="q">
+		<input type="submit" value="Search">
+	</form>
+
+	<div id="exampleTimeoutLoop"></div>
+
+	<pre id="results"></pre>
+
+	<script src="async.js"></script>
+	<script src="jquery.js"></script>
+
+	<script>
+
+		var numberOfLoops = 0;
+
+		// This is a named closure.
+		(function exampleTimeoutLoop() {
+
+			// Increment the loop counter.
+			numberOfLoops++;
+
+			// Show the number of loops.
+			$('#exampleTimeoutLoop').text('Number of example time-out loops: ' + (numberOfLoops));
+
+			setTimeout(exampleTimeoutLoop, 1000/* time to wait until function is executed */);
+
+		})();
+
+		(function timeoutOfZero() {
+
+			// Open the JavaScript console from your developer tools to see this one in action.
+			// This behavior is not intuitive and can be a little strange at first.
+			// Does it make sense to you?
+
+			console.log('before the timeout');
+
+			setTimeout(function() {
+				console.log('a timeout with a wait-time of 0 milliseconds');
+			}, 0);
+
+			// This will actually print BEFORE the console.log inside the setTimeout above.
+			console.log('after the timeout');
+
+		})();
+
+		document.addEventListener('DOMContentLoaded', function() {
+
+			var $form = $('#search');
+			var $results = $('#results');
+			var searching = false;
+
+			$form.on('submit', function(evt) {
+
+				// Prevents navigating away from this page when the form is submitted.
+				evt.preventDefault();
+
+				if (searching) {
+					// Already searching..
+					return;
+				}
+
+				var done = false;
+				var results;
+				var q = $(':input[name="q"]').val();
+
+				/*
+					Use jQuery to excute an AJAX request. For more information:
+					https://api.jquery.com/jquery.get/
+				*/
+				$.get('/search'/* URI */, { q: q }/* parameters */).done(function(data) {
+
+					done = true;
+
+					// This code is run when the AJAX request has finished.
+
+					try {
+						results = JSON.parse(data);
+					} catch (error) {
+						return console.log('Failed to parse response data.');
+					}
+				});
+
+				async.until(function() {
+
+					// Test function.
+					// Once this function returns TRUE, the loop will end.
+					// If this returns FALSE, the iteration function will be run again.
+					return done;
+
+				}, function(next) {
+
+					// Iteration function.
+					// This code will be run until the above test function returns TRUE.
+
+					$results.text('Searching');
+
+					setTimeout(function() {
+
+						$results.text('Searching.');
+
+						setTimeout(function() {
+
+							$results.text('Searching..');
+
+							setTimeout(function() {
+
+								$results.text('Searching...');
+								setTimeout(next, 500);
+
+							}, 500);
+
+						}, 500);
+
+					}, 500);
+
+				}, function() {
+
+					// This is run once the async.until loop has been broken.
+
+					// Show the results.
+					$results.text(JSON.stringify(results, null, 2/* amount of indentation */));
+				});
+			});
+		});
+	</script>
+</body>
+</html>
