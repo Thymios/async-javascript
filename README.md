@@ -37,7 +37,7 @@ Server started and listening at localhost:3000
 
 ## Try the demo
 
-Open your browser to [localhost:3000](http://localhost:3000) and enter a search query. After a short while you should search results in the page. Here is what is happening:
+Open your browser to [localhost:3000](http://localhost:3000) and enter a search query. After a short while you should see search results in the page. Here is what is happening:
 * The browser:
   * intercepts the search form submission.
   * sends a request to your local web server.
